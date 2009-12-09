@@ -2,6 +2,9 @@ package conc
 
 import "sync"
 
+/*
+	concurrent for loop - numWorkers iterations execute in parallel
+*/
 func For(inputs <-chan Box, numWorkers int, foo func(i Box)) (wait func()) {
 	m := new(sync.Mutex);
 	

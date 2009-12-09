@@ -23,7 +23,7 @@ func (s *safeCounter) val() int {
 }
 
 //try to read a value off a channel until foo returns false
-func GrabUntil(in chan Box, foo func() bool) (v Box, ok bool) {
+func grabUntil(in chan Box, foo func() bool) (v Box, ok bool) {
 	for {
 		if v, ok = <- in; ok {
 			return;
@@ -35,7 +35,12 @@ func GrabUntil(in chan Box, foo func() bool) (v Box, ok bool) {
 	return;
 }
 
-func Fold(in chan Box, foo func(Box, Box) Box) Box {
+/*
+	concurrent folding - foo is applied to pairs of items and the results are put
+	back in the list, until there is only one item in the list.
+*/
+
+func Fold(foo func(Box, Box) Box, in chan Box) Box {
 	ready := make(chan Box);
 	
 	//dump all values from in into ready
@@ -56,7 +61,7 @@ func Fold(in chan Box, foo func(Box, Box) Box) Box {
 	for {
 		first := <- ready;
 		
-		second, ok := GrabUntil(ready, moreComing);
+		second, ok := grabUntil(ready, moreComing);
 		
 		//if there aren't any more values coming, then we have completed the folding process
 		if !ok {

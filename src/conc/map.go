@@ -1,16 +1,18 @@
 package conc
 
-func Map(in chan Box, foo func(i Box) Box) chan Box {
-	out := make(chan Box);
+import "fmt"
+
+/*
+	Apply foo to each value in the channel, put on a new channel. Processing
+	is done in parallel, though retreival is in sequence.
+*/
+func Map(foo func(i Box) Box, in chan Box) chan Box {
 	futures := make(chan Thunk);
-	for i := range in {
-		futures <- Future(func() Box {return foo(i)});
-	}
 	go func() {
-		for f := range futures {
-			out <- f();
+		for i := range in {
+			futures <- Future(func() Box {return foo(i)});
 		}
-		close(out);
+		close(futures);
 	}();
-	return out;
+	return Realize(futures);
 }
