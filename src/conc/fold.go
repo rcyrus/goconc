@@ -53,7 +53,7 @@ func Fold(foo func(Box, Box) Box, in chan Box) Box {
 	//keep track of how many values are not in the ready queue, but will be eventually
 	inProcess := new(safeCounter);
 	
-	//if this function returns false, all relevant valus are currently in the ready queue
+	//if this function returns false, all relevant values are currently in the ready queue
 	moreComing := func() bool {
 		return !closed(in) || inProcess.val() > 0;
 	};

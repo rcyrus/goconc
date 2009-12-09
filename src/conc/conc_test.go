@@ -5,6 +5,29 @@ import (
 	//"fmt";
 )
 
+func TestFor(t *testing.T) {
+	numbers := make(chan Box);
+	go func() {
+		for i:=0; i<20; i++ {
+			numbers <- i;
+		}
+		close(numbers);
+	}();
+	
+	var vals [20]int;
+	wait := For(numbers, 3, func(i Box) {vals[i.(int)] = 1});
+	wait();
+	
+	total := 0;
+	for i:=0; i<20; i++ {
+		total += vals[i];
+	}
+	
+	if total != 20 {
+		t.Fail();
+	}
+}
+
 func TestMap(t *testing.T) {
 	incr := func(a Box) Box {
 		return a.(int)+1;
