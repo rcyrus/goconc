@@ -2,7 +2,7 @@ package conc
 
 import (
 	"testing";
-//	"fmt";
+	//"fmt";
 )
 
 func TestMap(t *testing.T) {
@@ -11,13 +11,13 @@ func TestMap(t *testing.T) {
 	};
 	numbers := make(chan Box);
 	go func() {
-		for i:=0; i<10; i++ {
+		for i:=0; i<20; i++ {
 			numbers <- i;
 		}
 		close(numbers);
 	}();
-	incrNumbers := Map(incr, numbers);
-	for i:=0; i<10; i++ {
+	incrNumbers := Map(incr, numbers, 20);
+	for i:=0; i<20; i++ {
 		j := <- incrNumbers;
 		if i+1 != j.(int) {
 			t.Fail();

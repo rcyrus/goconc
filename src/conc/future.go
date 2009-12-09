@@ -8,7 +8,6 @@ func Future(foo func() Box) (thunk func() Box) {
 	wormhole := make(chan Box);
 	go func() {
 		wormhole <- foo();
-		close(wormhole);
 	}();
 	var result Box;
 	thunk = func() Box {
@@ -18,5 +17,5 @@ func Future(foo func() Box) (thunk func() Box) {
 		result = <- wormhole;
 		return result;
 	};
-	return;
+	return thunk;
 }
