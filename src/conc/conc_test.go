@@ -39,7 +39,7 @@ func TestMap(t *testing.T) {
 		}
 		close(numbers);
 	}();
-	incrNumbers := Map(incr, numbers, 20);
+	incrNumbers := Map(incr, numbers);
 	for i:=0; i<20; i++ {
 		j := <- incrNumbers;
 		if i+1 != j.(int) {
