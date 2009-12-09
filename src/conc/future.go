@@ -5,17 +5,14 @@ package conc
 	foo(), waiting if necessary.
 */
 func Future(foo func() Box) (thunk func() Box) {
-	wormhole := make(chan Box);
+	wormhole := make(chan Box, 1);
 	go func() {
 		wormhole <- foo();
 	}();
-	var result Box;
-	thunk = func() Box {
-		if closed(wormhole) {
-			return result;
-		}
+	thunk = func() (result Box) {
 		result = <- wormhole;
-		return result;
+		wormhole <- result;
+		return;
 	};
 	return thunk;
 }
