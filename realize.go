@@ -15,3 +15,17 @@ func Realize(thunks chan Thunk) chan Box {
 	
 	return values;
 }
+
+func RealizeChan(thunks chan ThunkChan) chan Box {
+	values := make(chan Box);
+	
+	go func() {
+		for thunk := range thunks {
+			v := <- thunk;
+			values <- v;
+		}
+		close(values);
+	}();
+	
+	return values;
+}

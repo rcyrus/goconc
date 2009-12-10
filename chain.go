@@ -2,9 +2,9 @@ package conc
 
 /*
 	Transfers everything in "in" to "out", and when done sends the number of items along
-	the returned channel (and closes it).
+	the returned channel.
 */
-func Chain(in, out chan interface{}) chan int {
+func Chain(in, out chan Box) chan int {
 	count := make(chan int);
 	go func() {
 		c := 0;
@@ -12,8 +12,9 @@ func Chain(in, out chan interface{}) chan int {
 			c++;
 			out <- i;
 		}
-		count <- c;
-		close(count);
+		for {
+			count <- c;
+		}
 	}();
 	return count;
 }

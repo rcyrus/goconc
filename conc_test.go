@@ -2,6 +2,7 @@ package conc
 
 import (
 	"testing";
+	"time";
 )
 
 func numbers(max int) chan Box {
@@ -9,6 +10,18 @@ func numbers(max int) chan Box {
 	go func() {
 		for i:=0; i<max; i++ {
 			out <- i;
+		}
+		close(out);
+	}();
+	return out;
+}
+
+func slowNumbers(max int, delay int64) chan Box {
+	out := make(chan Box);
+	go func() {
+		for i:=0; i<max; i++ {
+			out <- i;
+			time.Sleep(delay);
 		}
 		close(out);
 	}();
@@ -84,7 +97,7 @@ func TestMapReduce(t *testing.T) {
 		return a.(int)+b.(int);
 	};
 	
-	result := Reduce(sum, MapUnordered(incr, numbers(10)), 0);
+	result := Reduce(sum, MapUnordered(incr, slowNumbers(10, 1e9)), 0);
 
 	if result.(int) != 55 {
 		t.Fail();
