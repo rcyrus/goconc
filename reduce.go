@@ -1,7 +1,7 @@
 package conc
 
 /*
-	concurrent folding - foo is applied to pairs of items and the results are put
+	concurrent reduce - foo is applied to pairs of items and the results are put
 	back in the list, until there is only one item in the list. The operator provided
 	must be both associative and commutative.
 */

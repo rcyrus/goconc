@@ -17,7 +17,7 @@ func numbers(max int) chan Box {
 
 func TestFor(t *testing.T) {
 	var vals [20]int;
-	wait := For(numbers(20), 3, func(i Box) {vals[i.(int)] = 1});
+	wait := ForChunk(numbers(20), func(i Box) {vals[i.(int)] = 1}, 3);
 	wait();
 	
 	total := 0;
@@ -27,6 +27,14 @@ func TestFor(t *testing.T) {
 	
 	if total != 20 {
 		t.Fail();
+	}
+	
+	wait = For(numbers(20), func(i Box) {vals[i.(int)] = 1});
+	wait();
+	
+	total = 0;
+	for i:=0; i<20; i++ {
+		total += vals[i];
 	}
 }
 
