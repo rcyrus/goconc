@@ -66,6 +66,7 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	sum := func(a Box, b Box) Box {
+		time.Sleep(1e9);
 		return a.(int)+b.(int);
 	};
 	totalSum := Reduce(sum, numbers(10), 0);
@@ -97,7 +98,7 @@ func TestMapReduce(t *testing.T) {
 		return a.(int)+b.(int);
 	};
 	
-	result := Reduce(sum, MapUnordered(incr, slowNumbers(10, 1e9)), 0);
+	result := Reduce(sum, MapUnordered(incr, numbers(10)), 0);
 
 	if result.(int) != 55 {
 		t.Fail();
