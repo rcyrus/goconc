@@ -14,16 +14,16 @@ func Reduce(foo func(Box, Box) Box, in chan Box, init Box) (result Box) {
 	
 	countSignal := Chain(in, ready);
 	
-	doneReading := false;
-	count := 0;
+	count := -1; //this value means "unknown"
 	folds := 0;
 	
 	result = <- ready;
-	for !doneReading || folds != count {
+	for count < 0 || folds != count {
 		select {
+		
 		//when this fires, all inputs are in ready and we can see how many there were
 		case count = <- countSignal:
-			doneReading = true;
+		
 		//when this fires, we can fold two values (in another goroutine)
 		case second := <- ready:
 			folds++;
