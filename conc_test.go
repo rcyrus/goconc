@@ -2,7 +2,7 @@ package conc
 
 import (
 	"testing";
-	//"fmt";
+//	"fmt";
 )
 
 func TestFor(t *testing.T) {
@@ -63,5 +63,22 @@ func TestFold(t *testing.T) {
 
 	if totalSum.(int) != 45 {
 		t.Fail();
+	}
+}
+
+func TestFilter(t *testing.T) {
+	numbers := make(chan Box);
+	go func() {
+		for i:=0; i<10; i++ {
+			numbers <- i;
+		}
+		close(numbers);
+	}();
+	
+	results := Filter(func(i Box) bool { return i.(int)%2==0 }, numbers);
+	for i := 0; i < 10; i+=2 {
+		if i != (<-results).(int) {
+			t.Fail();
+		}
 	}
 }
