@@ -21,7 +21,7 @@ func For(inputs <-chan Box, numWorkers int, foo func(i Box)) (wait func()) {
 				foo(i);
 			}
 			block <- true;
-		}()
+		}();
 	}
 	wait = func() {
 		for i := 0; i < numWorkers; i++ {

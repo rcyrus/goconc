@@ -52,3 +52,31 @@ func Map(foo func(i Box) Box, in chan Box) chan Box {
 	}();
 	return Realize(futures);
 }
+
+/*
+	Same as above, except no guarantee about the order of things coming out.
+	Useful for map-reduce.
+*/
+func MapUnordered(foo func(i Box) Box, in chan Box) chan Box {
+	out := make(chan Box);
+	
+	done := make(chan bool);
+	count := 0;
+	
+	go func() {
+		for i := range in {
+			count++;
+			go func(i Box) {
+				out <- foo(i);
+				done <- true;
+			}(i);
+		}
+		for i := 0; i < count; i++ {
+			<-done;
+		}
+		close(out);
+	}();
+	
+	return out;
+}
+

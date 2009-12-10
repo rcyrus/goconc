@@ -4,7 +4,7 @@ TARG=conc
 GOFILES=\
         conc.go\
 		filter.go\
-		fold.go\
+		reduce.go\
         for.go\
 		future.go\
 		map.go\

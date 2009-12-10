@@ -5,8 +5,12 @@ package conc
 	back in the list, until there is only one item in the list. The operator provided
 	must be both associative and commutative.
 */
-func Fold(foo func(Box, Box) Box, in chan Box) (result Box) {
+func Reduce(foo func(Box, Box) Box, in chan Box, init Box) (result Box) {
 	ready := make(chan Box);
+	
+	go func() {
+		ready <- init;
+	}();
 	
 	inserted := make(chan bool);
 	count := 0;
@@ -15,45 +19,35 @@ func Fold(foo func(Box, Box) Box, in chan Box) (result Box) {
 	
 	//dump all values from in into ready
 	go func() {
-		for {
-			if v, isLast := <-in, closed(in); !isLast {
-				count++;
-				go func() {
-					ready <- v;
-					inserted <- true;
-				}();
-			}
-			else {
-				break;
-			}
+		for x := range in {
+			count++;
+			go func(x Box) {
+				ready <- x;
+				inserted <- true;
+			}(x);
 		}
+		//wait for all of the values read to get onto ready
 		for i:=0; i<count; i++ {
 			<-inserted;
 		}
+		//send a signal indicating that the input is exhausted
 		doneSignal <- true;
 	}();
 	
 	doneReading := false;
 	folds := 0;
-	for {
-		first := <- ready;
-		if doneReading && folds == count-1 {
-			result = first;
-			break;
-		}
+	
+	result = <- ready;
+	for !doneReading || folds != count {
 		select {
-		case second := <- ready:
-			folds++;
-			go func() {
-				ready <- foo(first, second);
-			}();
-			break;
 		case <-doneSignal:
 			doneReading = true;
-			go func() {
-				ready <- first;
-			}();
-			break;
+		case second := <- ready:
+			folds++;
+			go func(first, second Box) {
+				ready <- foo(first, second);
+			}(result, second);
+			result = <- ready;
 		}
 	}
 	
