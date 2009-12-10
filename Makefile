@@ -2,6 +2,7 @@ include $(GOROOT)/src/Make.$(GOARCH)
 
 TARG=conc
 GOFILES=\
+		chain.go\
         conc.go\
 		filter.go\
         for.go\
