@@ -6,6 +6,7 @@ package conc
 func Filter(foo func(i Box) bool, in chan Box) chan Box {
 	out := make(chan Box);
 	
+	doneIterating := make(chan bool);
 	done := make(chan bool);
 	count := 0;
 	
@@ -20,10 +21,11 @@ func Filter(foo func(i Box) bool, in chan Box) chan Box {
 				done <- true;
 			}();
 		}
+		doneIterating <- true;
 	}();
 	
 	go func() {
-		WaitUntil(func() bool {return closed(in)});
+		<-doneIterating;
 		for i := 0; i<count; i++ {
 			<-done;
 		}

@@ -4,11 +4,10 @@ TARG=conc
 GOFILES=\
         conc.go\
 		filter.go\
-		reduce.go\
         for.go\
 		future.go\
 		map.go\
 		realize.go\
-		wait.go\
+		reduce.go\
 
 include $(GOROOT)/src/Make.pkg

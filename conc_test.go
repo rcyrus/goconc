@@ -56,8 +56,12 @@ func TestReduce(t *testing.T) {
 
 func TestFilter(t *testing.T) {	
 	results := Filter(func(i Box) bool { return i.(int)%2==0 }, numbers(10));
-	for i := 0; i < 10; i+=2 {
-		if i != (<-results).(int) {
+	trueRes := make([]bool, 10);
+	for i := range results {
+		trueRes[i.(int)] = true;
+	}
+	for i,v := range trueRes {
+		if v != (i%2==0) {
 			t.Fail();
 		}
 	}
