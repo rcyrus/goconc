@@ -37,7 +37,7 @@ func Reduce(foo func(Box, Box) Box, in chan Box, init Box) (result Box) {
 	return;
 }
 
-func ReduceChunk(foo func(Box, Box) Box, in chan Box, init Box, n int) (result Box) {
+func ReduceChunk(foo func(Box, Box) Box, in chan Box, init Box, numWorkers int) (result Box) {
 	ready := make(chan Box);
 	
 	go func() {
@@ -50,24 +50,13 @@ func ReduceChunk(foo func(Box, Box) Box, in chan Box, init Box, n int) (result B
 	folds := 0;
 	
 	processChan := make(chan Box);
-	var multiPChan MultiReader;
-	multiPChan.ch = processChan;
 	
-	for i := 0; i < n; i++ {
-		go func() {
-			for fsThunk, done := multiPChan.read(); !done; fsThunk, done = multiPChan.read() {
-				first, second := fsThunk.(func() (Box,Box))();
-				ready <- foo(first, second);
-			}
-		}();
-	}
-	
-	makeThunk := func(f, s Box) (foo func() (Box,Box)) {
-		foo = func() (Box, Box) {
-			return f, s;
-		};
-		return;
+	reduceTwo := func(thunk Box) {
+		first, second := thunk.(func() (Box,Box))();
+		ready <- foo(first, second);
 	};
+	
+	ForChunk(processChan, reduceTwo, numWorkers);
 	
 	result = <- ready;
 	for count < 0 || folds != count {
@@ -79,9 +68,10 @@ func ReduceChunk(foo func(Box, Box) Box, in chan Box, init Box, n int) (result B
 		//when this fires, we can fold two values (in another goroutine)
 		case second := <- ready:
 			folds++;
-			go func(first, second Box) {
-				processChan <- makeThunk(first, second);
-			}(result, second);
+			first := result;
+			processChan <- func() (Box, Box) {
+				return first, second;
+			};
 			result = <- ready;
 		}
 	}
