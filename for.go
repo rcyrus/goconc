@@ -4,12 +4,12 @@ package conc
 	concurrent for loop - numWorkers iterations execute in parallel
 */
 func ForChunk(inputs <-chan Box, foo func(i Box), numWorkers int) (wait func()) {
-	workerInputs := SafeChan(inputs);
+///	workerInputs := SafeChan(inputs);
 	
 	block := make(chan bool, numWorkers);
 	for j := 0; j < numWorkers; j++ {
 		go func() {
-			myInput := <- workerInputs;
+			myInput := SafeChan(inputs);
 			for i := range myInput {
 				foo(i);
 			}

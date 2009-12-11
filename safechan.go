@@ -1,14 +1,28 @@
 package conc
 
-import "runtime"
+import (
+	"sync";
+	"runtime";
+)
+
+var lookup = make(map[<-chan Box] chan chan Box)
+var safeChanLock sync.Mutex
 
 /*
 	Returns a stream of channels that will grab values from the input, with
 	the idea that you can use range and <-ch,closed(ch) in a threadsafe fashion.
 */
-func SafeChan(inputs <-chan Box) chan chan Box {
+func SafeChan(inputs <-chan Box) chan Box {
+	safeChanLock.Lock();
+	defer safeChanLock.Unlock();
+	if outgoing, ok := lookup[inputs]; ok {
+		return <-outgoing;
+	}
+
 	loop := make(chan chan Box);
 	outgoing := make(chan chan Box);
+	
+	lookup[inputs] = outgoing;
 	
 	go func() {
 		for {
@@ -35,7 +49,9 @@ func SafeChan(inputs <-chan Box) chan chan Box {
 		for receiver := range loop {
 			close(receiver);
 		}
+		
+		lookup[inputs] = nil, false;
 	}();
 	
-	return outgoing;
+	return <-outgoing;
 }

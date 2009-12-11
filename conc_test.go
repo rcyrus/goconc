@@ -106,11 +106,10 @@ func TestMapReduce(t *testing.T) {
 
 func TestSafeChan(t *testing.T) {
 	baseChan := slowNumbers(10, 0.5*1e9);
-	safeChanChan := SafeChan(baseChan);
 	
-	chan1 := <- safeChanChan;
-	chan2 := <- safeChanChan;
-	chan3 := <- safeChanChan;
+	chan1 := SafeChan(baseChan);
+	chan2 := SafeChan(baseChan);
+	chan3 := SafeChan(baseChan);
 	
 	collector := make(chan int);
 	
