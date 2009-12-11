@@ -13,6 +13,7 @@ func ForChunk(inputs <-chan Box, foo func(i Box), numWorkers int) (wait func()) 
 	for j := 0; j < numWorkers; j++ {
 		go func() {
 			/*
+			//SafeChan involves a busy(Goshed())wait, which makes people angry
 			myInput := SafeChan(inputs);
 			for i := range myInput {
 				foo(i);

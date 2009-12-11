@@ -62,6 +62,12 @@ func TestReduce(t *testing.T) {
 	if totalSum.(int) != 45 {
 		t.Fail();
 	}
+	
+	totalSum = ReduceChunk(sum, CountStream(0, 10), 0, 2);
+
+	if totalSum.(int) != 45 {
+		t.Fail();
+	}
 }
 
 func TestFilter(t *testing.T) {	

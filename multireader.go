@@ -7,9 +7,9 @@ type MultiReader struct {
 	m sync.Mutex;
 }
 
-func (cw *MultiReader) read() (v Box, ok bool) {
+func (cw *MultiReader) read() (value Box, ok bool) {
 	cw.m.Lock();
-	v, ok = <-cw.ch, closed(cw.ch);
+	value, ok = <-cw.ch, closed(cw.ch);
 	cw.m.Unlock();
 	return;
 }

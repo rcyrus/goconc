@@ -15,8 +15,15 @@ var safeChanLock sync.Mutex
 	different channels that can all be read in different goroutines.
 */
 func SafeChan(inputs <-chan Box) chan Box {
+	if closed(inputs) {
+		out := make(chan Box);
+		close(out);
+		return out;
+	}
+	
 	safeChanLock.Lock();
 	defer safeChanLock.Unlock();
+	
 	if outgoing, ok := lookup[inputs]; ok {
 		return <-outgoing;
 	}
@@ -31,12 +38,19 @@ func SafeChan(inputs <-chan Box) chan Box {
 			nextChan := make(chan Box);
 			outgoing <- nextChan;
 			//once the new channel is grabbed by someone, add it to the loop
-			loop <- nextChan;
+			go func() {
+				loop <- nextChan;
+			}();
 		}
 	}();
 	
 	go func() {
 		for v := range inputs {
+			/*
+			This loop is a busy-wait. It would be much nicer to have
+			a select {} that worked on an arbitrary number of channels
+			(ie you don't have to have them all named at compile time).
+			*/
 			for receiver := range loop {
 				go func(receiver chan Box) {
 					loop <- receiver;

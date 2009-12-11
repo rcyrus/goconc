@@ -36,3 +36,57 @@ func Reduce(foo func(Box, Box) Box, in chan Box, init Box) (result Box) {
 	
 	return;
 }
+
+func ReduceChunk(foo func(Box, Box) Box, in chan Box, init Box, n int) (result Box) {
+	ready := make(chan Box);
+	
+	go func() {
+		ready <- init;
+	}();
+	
+	countSignal := Chain(in, ready);
+	
+	count := -1; //this value means "unknown"
+	folds := 0;
+	
+	processChan := make(chan Box);
+	var multiPChan MultiReader;
+	multiPChan.ch = processChan;
+	
+	for i := 0; i < n; i++ {
+		go func() {
+			for fsThunk, done := multiPChan.read(); !done; fsThunk, done = multiPChan.read() {
+				first, second := fsThunk.(func() (Box,Box))();
+				ready <- foo(first, second);
+			}
+		}();
+	}
+	
+	makeThunk := func(f, s Box) (foo func() (Box,Box)) {
+		foo = func() (Box, Box) {
+			return f, s;
+		};
+		return;
+	};
+	
+	result = <- ready;
+	for count < 0 || folds != count {
+		select {
+		
+		//when this fires, all inputs are in ready and we can see how many there were
+		case count = <- countSignal:
+		
+		//when this fires, we can fold two values (in another goroutine)
+		case second := <- ready:
+			folds++;
+			go func(first, second Box) {
+				processChan <- makeThunk(first, second);
+			}(result, second);
+			result = <- ready;
+		}
+	}
+	
+	close(processChan);
+	
+	return;
+}
