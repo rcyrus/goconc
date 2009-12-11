@@ -6,7 +6,7 @@ import "runtime"
 	Returns a stream of channels that will grab values from the input, with
 	the idea that you can use range and <-ch,closed(ch) in a threadsafe fashion.
 */
-func SafeChan(inputs chan Box) chan chan Box {
+func SafeChan(inputs <-chan Box) chan chan Box {
 	loop := make(chan chan Box);
 	outgoing := make(chan chan Box);
 	

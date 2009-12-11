@@ -1,23 +1,16 @@
 package conc
 
-import "sync"
-
 /*
 	concurrent for loop - numWorkers iterations execute in parallel
 */
 func ForChunk(inputs <-chan Box, foo func(i Box), numWorkers int) (wait func()) {
-	m := new(sync.Mutex);
+	workerInputs := SafeChan(inputs);
 	
 	block := make(chan bool, numWorkers);
 	for j := 0; j < numWorkers; j++ {
 		go func() {
-			for {
-				m.Lock();
-				i, done := <- inputs, closed(inputs);
-				m.Unlock();
-				if done {
-					break;
-				}
+			myInput := <- workerInputs;
+			for i := range myInput {
 				foo(i);
 			}
 			block <- true;
