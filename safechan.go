@@ -9,8 +9,10 @@ var lookup = make(map[<-chan Box] chan chan Box)
 var safeChanLock sync.Mutex
 
 /*
-	Returns a stream of channels that will grab values from the input, with
+	Returns a channel that will grab values from the input, with
 	the idea that you can use range and <-ch,closed(ch) in a threadsafe fashion.
+	Multiple calls to SafeChan() with the same input channel will result in
+	different channels that can all be read in different goroutines.
 */
 func SafeChan(inputs <-chan Box) chan Box {
 	safeChanLock.Lock();

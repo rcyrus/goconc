@@ -5,17 +5,6 @@ import (
 	"time";
 )
 
-func numbers(max int) chan Box {
-	out := make(chan Box);
-	go func() {
-		for i:=0; i<max; i++ {
-			out <- i;
-		}
-		close(out);
-	}();
-	return out;
-}
-
 func slowNumbers(max int, delay int64) chan Box {
 	out := make(chan Box);
 	go func() {
@@ -30,7 +19,7 @@ func slowNumbers(max int, delay int64) chan Box {
 
 func TestFor(t *testing.T) {
 	var vals [20]int;
-	wait := ForChunk(numbers(20), func(i Box) {vals[i.(int)] = 1}, 3);
+	wait := ForChunk(CountStream(0, 20), func(i Box) {vals[i.(int)] = 1}, 3);
 	wait();
 	
 	total := 0;
@@ -42,7 +31,7 @@ func TestFor(t *testing.T) {
 		t.Fail();
 	}
 	
-	wait = For(numbers(20), func(i Box) {vals[i.(int)] = 1});
+	wait = For(CountStream(0, 20), func(i Box) {vals[i.(int)] = 1});
 	wait();
 	
 	total = 0;
@@ -55,7 +44,7 @@ func TestMap(t *testing.T) {
 	incr := func(a Box) Box {
 		return a.(int)+1;
 	};
-	incrNumbers := Map(incr, numbers(20));
+	incrNumbers := Map(incr, CountStream(0, 20));
 	for i:=0; i<20; i++ {
 		j := <- incrNumbers;
 		if i+1 != j.(int) {
@@ -68,7 +57,7 @@ func TestReduce(t *testing.T) {
 	sum := func(a Box, b Box) Box {
 		return a.(int)+b.(int);
 	};
-	totalSum := Reduce(sum, numbers(10), 0);
+	totalSum := Reduce(sum, CountStream(0, 10), 0);
 
 	if totalSum.(int) != 45 {
 		t.Fail();
@@ -76,7 +65,7 @@ func TestReduce(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {	
-	results := Filter(func(i Box) bool { return i.(int)%2==0 }, numbers(10));
+	results := Filter(func(i Box) bool { return i.(int)%2==0 }, CountStream(0, 10));
 	trueRes := make([]bool, 10);
 	for i := range results {
 		trueRes[i.(int)] = true;
@@ -97,7 +86,7 @@ func TestMapReduce(t *testing.T) {
 		return a.(int)+b.(int);
 	};
 	
-	result := Reduce(sum, MapUnordered(incr, numbers(10)), 0);
+	result := Reduce(sum, MapUnordered(incr, CountStream(0, 10)), 0);
 
 	if result.(int) != 55 {
 		t.Fail();
@@ -105,7 +94,15 @@ func TestMapReduce(t *testing.T) {
 }
 
 func TestSafeChan(t *testing.T) {
-	baseChan := slowNumbers(10, 0.5*1e9);
+	slowCounter := func () (foo func() Box) {
+		i := 0;
+		return func() Box {
+			defer func() {i++}();
+			time.Sleep(1e8);
+			return i;
+		};
+	};
+	baseChan := EvalStream(slowCounter());
 	
 	chan1 := SafeChan(baseChan);
 	chan2 := SafeChan(baseChan);

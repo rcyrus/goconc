@@ -6,11 +6,19 @@ package conc
 func ForChunk(inputs <-chan Box, foo func(i Box), numWorkers int) (wait func()) {
 ///	workerInputs := SafeChan(inputs);
 	
+	var multiInputs MultiReader;
+	multiInputs.ch = inputs;
+	
 	block := make(chan bool, numWorkers);
 	for j := 0; j < numWorkers; j++ {
 		go func() {
+			/*
 			myInput := SafeChan(inputs);
 			for i := range myInput {
+				foo(i);
+			}
+			*/
+			for i, done := multiInputs.read(); !done; i, done = multiInputs.read() {
 				foo(i);
 			}
 			block <- true;

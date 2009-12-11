@@ -8,8 +8,10 @@ GOFILES=\
         for.go\
 		future.go\
 		map.go\
+		multireader.go\
 		realize.go\
 		reduce.go\
 		safechan.go\
+		streams.go\
 
 include $(GOROOT)/src/Make.pkg
