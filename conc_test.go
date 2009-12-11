@@ -66,7 +66,6 @@ func TestMap(t *testing.T) {
 
 func TestReduce(t *testing.T) {
 	sum := func(a Box, b Box) Box {
-		time.Sleep(1e9);
 		return a.(int)+b.(int);
 	};
 	totalSum := Reduce(sum, numbers(10), 0);
@@ -102,5 +101,36 @@ func TestMapReduce(t *testing.T) {
 
 	if result.(int) != 55 {
 		t.Fail();
+	}
+}
+
+func TestSafeChan(t *testing.T) {
+	baseChan := slowNumbers(10, 0.5*1e9);
+	safeChanChan := SafeChan(baseChan);
+	
+	chan1 := <- safeChanChan;
+	chan2 := <- safeChanChan;
+	chan3 := <- safeChanChan;
+	
+	collector := make(chan int);
+	
+	go func() {
+		for v := range chan1 {
+			collector <- v.(int);
+		}
+	}();
+	go func() {
+		for v := range chan2 {
+			collector <- v.(int);
+		}
+	}();
+	go func() {
+		for v := range chan3 {
+			collector <- v.(int);
+		}
+	}();
+	
+	for i:=0; i<10; i++ {
+		<-collector;
 	}
 }

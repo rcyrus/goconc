@@ -13,6 +13,7 @@ func Chain(in, out chan Box) chan int {
 			out <- i;
 		}
 		for {
+			//send it forever in case multiple sites are interested
 			count <- c;
 		}
 	}();

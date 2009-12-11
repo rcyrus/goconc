@@ -10,5 +10,6 @@ GOFILES=\
 		map.go\
 		realize.go\
 		reduce.go\
+		safechan.go\
 
 include $(GOROOT)/src/Make.pkg
