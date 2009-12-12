@@ -6,11 +6,9 @@ package conc
 */
 func Future(foo func() Box) Thunk {
 	wormhole := make(chan Box, 1);
-	go func() {
-		wormhole <- foo();
-	}();
+	go func() { wormhole <- foo() }();
 	return func() (result Box) {
-		result = <- wormhole;
+		result = <-wormhole;
 		wormhole <- result;
 		return;
 	};
@@ -21,7 +19,7 @@ func FutureChan(foo func() Box) ThunkChan {
 	go func() {
 		result := foo();
 		for {
-			wormhole <- result;
+			wormhole <- result
 		}
 	}();
 	return wormhole;

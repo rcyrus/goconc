@@ -14,7 +14,7 @@ func Chain(in, out chan Box) chan int {
 		}
 		for {
 			//send it forever in case multiple sites are interested
-			count <- c;
+			count <- c
 		}
 	}();
 	return count;

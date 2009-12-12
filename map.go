@@ -12,7 +12,7 @@ func MapBuffered(foo func(i Box) Box, in chan Box, length int) chan Box {
 	go func() {
 		for i := range in {
 			i := i;
-			futures <- Future(func() Box {return foo(i)});
+			futures <- Future(func() Box { return foo(i) });
 		}
 		close(futures);
 	}();
@@ -24,7 +24,7 @@ func MapBuffered(foo func(i Box) Box, in chan Box, length int) chan Box {
 */
 func chain(in, out chan Thunk) {
 	for b := range in {
-		out <- b;
+		out <- b
 	}
 	close(out);
 }
@@ -38,7 +38,7 @@ func chain(in, out chan Thunk) {
 func Map(foo func(i Box) Box, in chan Box) chan Box {
 	futures := make(chan Thunk);
 	last := futures;
-	
+
 	go func() {
 		for i := range in {
 			//keep your own i
@@ -46,7 +46,7 @@ func Map(foo func(i Box) Box, in chan Box) chan Box {
 			next := make(chan Thunk);
 			go chain(next, last);
 			last = next;
-			last <- Future(func() Box {return foo(i)});
+			last <- Future(func() Box { return foo(i) });
 		}
 		close(last);
 	}();
@@ -59,10 +59,10 @@ func Map(foo func(i Box) Box, in chan Box) chan Box {
 */
 func MapUnordered(foo func(i Box) Box, in chan Box) chan Box {
 	out := make(chan Box);
-	
+
 	done := make(chan bool);
 	count := 0;
-	
+
 	go func() {
 		for i := range in {
 			count++;
@@ -72,11 +72,10 @@ func MapUnordered(foo func(i Box) Box, in chan Box) chan Box {
 			}(i);
 		}
 		for i := 0; i < count; i++ {
-			<-done;
+			<-done
 		}
 		close(out);
 	}();
-	
+
 	return out;
 }
-

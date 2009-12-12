@@ -3,8 +3,8 @@ package conc
 import "sync"
 
 type MultiReader struct {
-	ch <-chan Box;
-	m sync.Mutex;
+	ch	<-chan Box;
+	m	sync.Mutex;
 }
 
 func (cw *MultiReader) read() (value Box, ok bool) {
